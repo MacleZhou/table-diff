@@ -1,27 +1,34 @@
 package com.github.dmn1k;
 
-import lombok.Builder;
+import io.vavr.collection.List;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.Singular;
+import lombok.Getter;
 
-import java.util.Arrays;
-import java.util.List;
+import static io.vavr.API.*;
+import static io.vavr.Patterns.$Nil;
 
-@Builder
+@Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode
 public class TableRow {
-    @Singular
-    private List<String> cells;
+    private List<TableCell> cells;
 
-    public static TableRow create(String... cells) {
-        return TableRow.builder()
-                .cells(Arrays.asList(cells))
-                .build();
+    public static TableRow create(List<TableCell> cells) {
+        return new TableRow(cells);
 
     }
 
-    public io.vavr.collection.List<String> cells() {
-        return io.vavr.collection.List.ofAll(cells);
-    }
+    public String primaryKeyValue() {
+        List<TableCell> primKeyCells = cells.filter(TableCell::isPrimaryKey);
 
+        return Match(primKeyCells).of(
+                Case($Nil(), () -> cells),
+                Case($(), () -> primKeyCells)
+        )
+                .map(TableCell::getValue)
+                .foldLeft("", String::concat);
+
+    }
 }

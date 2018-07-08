@@ -1,26 +1,30 @@
 package com.github.dmn1k;
 
 
+import io.vavr.Function1;
 import io.vavr.collection.List;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import io.vavr.collection.Map;
+import io.vavr.control.Option;
+import lombok.*;
 
-
+@Builder
+@Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Table {
-    private List<TableRow> rows = List.empty();
+    private List<TableHeader> headers;
+    private List<TableRow> rows;
 
-    public static Table create(String... headers) {
-        return new Table();
+    public static Table create(TableHeader... headers) {
+        return new Table(List.of(headers), List.empty());
     }
 
     public Table addRow(String... cells) {
-        return new Table(rows.append(TableRow.create(cells)));
-    }
+        List<TableCell> tableCells =
+                List.of(cells)
+                        .zipWithIndex()
+                        .map(valueToIndex -> valueToIndex.map2(idx -> headers.get(idx).isPrimaryKey()))
+                        .map(TableCell::create);
 
-    public List<TableRow> rows() {
-        return rows;
+        return new Table(headers, rows.append(TableRow.create(tableCells)));
     }
 }

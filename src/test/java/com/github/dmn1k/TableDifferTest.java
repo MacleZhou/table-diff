@@ -22,25 +22,51 @@ class TableDifferTest {
 
             List<TableDiffResult> result = tableDiffer.diff(Option.of(table), Option.of(table));
 
-            assertThat(result).hasSize(table.rows().size());
+            assertThat(result).hasSize(table.getRows().size());
             assertThat(result).allMatch(r -> DiffType.Unchanged.equals(r.getDiffType()));
         }
 
         @DisplayName("for each row which exactly matches between the two tables")
         @Test
-        void returnsChangedResultIfCellChanged() {
+        void returnsUnchangedResultIfRowsMatchExactly() {
             TableDiffer tableDiffer = new TableDiffer();
-            Table header = Table.create("x", "y");
-
-            List<TableDiffResult> result = tableDiffer.diff(
-                    Option.of(header.addRow("1", "1")
-                            .addRow("1", "2")
-                            .addRow("2", "2")),
-                    Option.of(header.addRow("1", "1")
-                            .addRow("1", "3")
-                            .addRow("2", "2"))
+            Table header = Table.create(
+                    TableHeader.createPrimaryKey("x"),
+                    TableHeader.create("y")
             );
 
+            List<TableDiffResult> result = tableDiffer.diff(
+                    Option.of(header.addRow("a", "1")
+                            .addRow("b", "2")
+                            .addRow("c", "2")),
+                    Option.of(header.addRow("a", "1")
+                            .addRow("b", "3")
+                            .addRow("c", "2"))
+            );
+
+            assertThat(result.get(0).getDiffType()).isEqualTo(DiffType.Unchanged);
+            assertThat(result.get(2).getDiffType()).isEqualTo(DiffType.Unchanged);
+        }
+
+        @DisplayName("for unchanged rows matched by primary key")
+        @Test
+        void returnsUnchangedResultForUnchangedRowsMatchedByPrimaryKey() {
+            TableDiffer tableDiffer = new TableDiffer();
+            Table table = Table.create(
+                    TableHeader.createPrimaryKey("x"),
+                    TableHeader.create("y")
+            );
+
+            List<TableDiffResult> result = tableDiffer.diff(
+                    Option.of(table.addRow("a", "1")
+                            .addRow("b", "2")
+                            .addRow("c", "2")),
+                    Option.of(table.addRow("b", "1")
+                            .addRow("c", "2")
+                            .addRow("a", "1"))
+            );
+
+            assertThat(result).hasSize(3);
             assertThat(result.get(0).getDiffType()).isEqualTo(DiffType.Unchanged);
             assertThat(result.get(2).getDiffType()).isEqualTo(DiffType.Unchanged);
         }
@@ -57,8 +83,32 @@ class TableDifferTest {
 
             List<TableDiffResult> result = tableDiffer.diff(Option.of(table), Option.none());
 
-            assertThat(result).hasSize(table.rows().size());
+            assertThat(result).hasSize(table.getRows().size());
             assertThat(result).allMatch(r -> DiffType.New.equals(r.getDiffType()));
+        }
+
+        @DisplayName("if part of composite primary key has changed")
+        @Test
+        void returnsChangedResultIfCellChangedIdentifiedByCompositeKey() {
+            TableDiffer tableDiffer = new TableDiffer();
+            Table header = Table.create(
+                    TableHeader.createPrimaryKey("x"),
+                    TableHeader.create("y"),
+                    TableHeader.createPrimaryKey("z")
+            );
+
+            List<TableDiffResult> result = tableDiffer.diff(
+                    Option.of(header
+                            .addRow("a", "b", "c")
+                    ),
+                    Option.of(header
+                            .addRow("a", "b", "d")
+                    )
+            );
+
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).getDiffType()).isEqualTo(DiffType.New);
+            assertThat(result.get(1).getDiffType()).isNotEqualTo(DiffType.New);
         }
     }
 
@@ -73,8 +123,32 @@ class TableDifferTest {
 
             List<TableDiffResult> result = tableDiffer.diff(Option.none(), Option.of(table));
 
-            assertThat(result).hasSize(table.rows().size());
+            assertThat(result).hasSize(table.getRows().size());
             assertThat(result).allMatch(r -> DiffType.Deleted.equals(r.getDiffType()));
+        }
+
+        @DisplayName("if part of composite primary key has changed")
+        @Test
+        void returnsChangedResultIfCellChangedIdentifiedByCompositeKey() {
+            TableDiffer tableDiffer = new TableDiffer();
+            Table header = Table.create(
+                    TableHeader.createPrimaryKey("x"),
+                    TableHeader.create("y"),
+                    TableHeader.createPrimaryKey("z")
+            );
+
+            List<TableDiffResult> result = tableDiffer.diff(
+                    Option.of(header
+                            .addRow("a", "b", "c")
+                    ),
+                    Option.of(header
+                            .addRow("a", "b", "d")
+                    )
+            );
+
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).getDiffType()).isNotEqualTo(DiffType.Deleted);
+            assertThat(result.get(1).getDiffType()).isEqualTo(DiffType.Deleted);
         }
     }
 
@@ -85,7 +159,10 @@ class TableDifferTest {
         @Test
         void returnsChangedResultIfCellChanged() {
             TableDiffer tableDiffer = new TableDiffer();
-            Table header = Table.create("x", "y");
+            Table header = Table.create(
+                    TableHeader.createPrimaryKey("x"),
+                    TableHeader.create("y")
+            );
 
             List<TableDiffResult> result = tableDiffer.diff(
                     Option.of(header.addRow("1", "2")),
@@ -94,6 +171,33 @@ class TableDifferTest {
 
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getDiffType()).isEqualTo(DiffType.Changed);
+        }
+
+        @DisplayName("if row identified by composite key has changed")
+        @Test
+        void returnsChangedResultIfCellChangedIdentifiedByCompositeKey() {
+            TableDiffer tableDiffer = new TableDiffer();
+            Table header = Table.create(
+                    TableHeader.createPrimaryKey("x"),
+                    TableHeader.create("y"),
+                    TableHeader.createPrimaryKey("z")
+            );
+
+            List<TableDiffResult> result = tableDiffer.diff(
+                    Option.of(header
+                            .addRow("1", "2", "3")
+                            .addRow("a", "b", "c")
+                    ),
+                    Option.of(header
+                            .addRow("1", "3", "3")
+                            .addRow("a", "b", "d")
+                    )
+            );
+
+            assertThat(result).hasSize(3);
+            assertThat(result.get(0).getDiffType()).isEqualTo(DiffType.Changed);
+            assertThat(result.get(1).getDiffType()).isNotEqualTo(DiffType.Changed);
+            assertThat(result.get(2).getDiffType()).isNotEqualTo(DiffType.Changed);
         }
     }
 
