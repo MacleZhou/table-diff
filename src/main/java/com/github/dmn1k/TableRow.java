@@ -1,10 +1,7 @@
 package com.github.dmn1k;
 
 import io.vavr.collection.List;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.*;
 
 import static io.vavr.API.*;
 import static io.vavr.Patterns.$Nil;
@@ -12,6 +9,7 @@ import static io.vavr.Patterns.$Nil;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode
+@ToString
 public class TableRow {
     private List<TableCell> cells;
 
