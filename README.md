@@ -4,7 +4,7 @@ Easily diff tables in Java 8+:
 
 ```Java
 TableDiffer tableDiffer = new TableDiffer()
-                              .withColumnComparisonStrategy(ColumnComparisonStrategies.IGNORE_ALL_MISSING_COLUMNS);
+                          .withColumnComparisonStrategy(ColumnComparisonStrategies.IGNORE_ALL_MISSING_COLUMNS);
                               
 Table header1 = Table.create(
         TableHeader.createPrimaryKey("x"),
