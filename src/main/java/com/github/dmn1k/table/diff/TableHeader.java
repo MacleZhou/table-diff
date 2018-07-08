@@ -1,4 +1,4 @@
-package com.github.dmn1k;
+package com.github.dmn1k.table.diff;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;

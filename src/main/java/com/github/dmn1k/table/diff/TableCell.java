@@ -1,4 +1,4 @@
-package com.github.dmn1k;
+package com.github.dmn1k.table.diff;
 
 import io.vavr.Tuple2;
 import lombok.ToString;

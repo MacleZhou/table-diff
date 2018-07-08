@@ -1,4 +1,4 @@
-package com.github.dmn1k;
+package com.github.dmn1k.table.diff;
 
 import io.vavr.Function2;
 import io.vavr.Tuple2;
@@ -18,13 +18,13 @@ public class TableDiffResult {
     private DiffType diffType;
 
     public static TableDiffResult create(Tuple2<Option<TableRow>, Option<TableRow>> rows,
-                                         Function2<TableCell, TableCell, Boolean> cellComparisonFn) {
-        return create(rows._1, rows._2, cellComparisonFn);
+                                         Function2<TableCell, TableCell, Boolean> columnComparisonFn) {
+        return create(rows._1, rows._2, columnComparisonFn);
     }
 
     public static TableDiffResult create(Option<TableRow> optNewRow,
                                          Option<TableRow> optOldRow,
-                                         Function2<TableCell, TableCell, Boolean> cellComparisonFn) {
+                                         Function2<TableCell, TableCell, Boolean> columnComparisonFn) {
         return Match(optNewRow).of(
                 Case($None(), () -> Match(optOldRow).of(
                         Case($None(), () -> createUnchanged(Option.none())),
@@ -32,7 +32,7 @@ public class TableDiffResult {
                 ),
                 Case($Some($()), newRow -> Match(optOldRow).of(
                         Case($None(), () -> createNew(newRow)),
-                        Case($Some($()), oldRow -> newRow.isSameAs(oldRow, cellComparisonFn)
+                        Case($Some($()), oldRow -> newRow.isSameAs(oldRow, columnComparisonFn)
                                 ? createUnchanged(newRow)
                                 : createChanged(newRow, oldRow)))
                 )

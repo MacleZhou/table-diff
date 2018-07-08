@@ -1,4 +1,4 @@
-package com.github.dmn1k;
+package com.github.dmn1k.table.diff;
 
 
 import io.vavr.Function1;
@@ -45,9 +45,12 @@ public class Table {
 
         List<TableCell> tableCells = cells
                 .zipWithIndex()
-                .map(valueToIndex -> valueToIndex.map2(idx -> totalIndexToHeaderFn
-                        .apply(idx)
-                        .isPrimaryKey()))
+                .map(valueToIndex -> valueToIndex
+                        .map2(idx -> totalIndexToHeaderFn
+                            .apply(idx)
+                            .isPrimaryKey()
+                        )
+                )
                 .map(TableCell::create);
 
 

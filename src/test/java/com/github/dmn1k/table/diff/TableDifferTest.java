@@ -1,4 +1,4 @@
-package com.github.dmn1k;
+package com.github.dmn1k.table.diff;
 
 import io.vavr.collection.List;
 import io.vavr.control.Option;
@@ -313,11 +313,11 @@ class TableDifferTest {
         @DisplayName("when old columns are removed")
         class ColumnsRemovedCases {
 
-            @DisplayName("missing columns are ignored if IGNORE_ALL_MISSING_CELLS strategy is used")
+            @DisplayName("missing columns are ignored if IGNORE_ALL_MISSING_COLUMNS strategy is used")
             @Test
             void ignoresAdditionalColumsInOldTable() {
                 TableDiffer tableDiffer = new TableDiffer()
-                        .withCellComparisonStrategy(CellComparisonStrategies.IGNORE_ALL_MISSING_CELLS);
+                        .withColumnComparisonStrategy(ColumnComparisonStrategies.IGNORE_ALL_MISSING_COLUMNS);
 
                 Table header1 = Table.create(
                         TableHeader.createPrimaryKey("x"),
@@ -349,11 +349,11 @@ class TableDifferTest {
                 assertThat(result).allMatch(r -> DiffType.Unchanged.equals(r.getDiffType()));
             }
 
-            @DisplayName("missing columns in new table are ignored if IGNORE_MISSING_CELLS_IN_NEW_TABLE strategy is used")
+            @DisplayName("missing columns in new table are ignored if IGNORE_MISSING_COLUMNS_IN_NEW_TABLE strategy is used")
             @Test
             void ignoresMissingCellsInNewTable() {
                 TableDiffer tableDiffer = new TableDiffer()
-                        .withCellComparisonStrategy(CellComparisonStrategies.IGNORE_MISSING_CELLS_IN_NEW_TABLE);
+                        .withColumnComparisonStrategy(ColumnComparisonStrategies.IGNORE_MISSING_COLUMNS_IN_NEW_TABLE);
 
                 Table header1 = Table.create(
                         TableHeader.createPrimaryKey("x"),
@@ -385,11 +385,11 @@ class TableDifferTest {
                 assertThat(result).allMatch(r -> DiffType.Changed.equals(r.getDiffType()));
             }
 
-            @DisplayName("missing columns in new table are ignored if IGNORE_MISSING_CELLS_IN_OLD_TABLE strategy is used")
+            @DisplayName("missing columns in new table are ignored if IGNORE_MISSING_COLUMNS_IN_OLD_TABLE strategy is used")
             @Test
             void ignoresMissingCellsInOldTable() {
                 TableDiffer tableDiffer = new TableDiffer()
-                        .withCellComparisonStrategy(CellComparisonStrategies.IGNORE_MISSING_CELLS_IN_OLD_TABLE);
+                        .withColumnComparisonStrategy(ColumnComparisonStrategies.IGNORE_MISSING_COLUMNS_IN_OLD_TABLE);
 
                 Table header1 = Table.create(
                         TableHeader.createPrimaryKey("x"),
@@ -455,11 +455,11 @@ class TableDifferTest {
         @Nested
         @DisplayName("when new columns are added")
         class ColumnsAddedCases {
-            @DisplayName("added columns are ignored if IGNORE_ALL_MISSING_CELLS strategy is used")
+            @DisplayName("added columns are ignored if IGNORE_ALL_MISSING_COLUMNS strategy is used")
             @Test
             void ignoresAdditionalColumsInNewTable() {
                 TableDiffer tableDiffer = new TableDiffer()
-                        .withCellComparisonStrategy(CellComparisonStrategies.IGNORE_ALL_MISSING_CELLS);
+                        .withColumnComparisonStrategy(ColumnComparisonStrategies.IGNORE_ALL_MISSING_COLUMNS);
                 Table header1 = Table.create(
                         TableHeader.createPrimaryKey("x"),
                         TableHeader.create("y"),

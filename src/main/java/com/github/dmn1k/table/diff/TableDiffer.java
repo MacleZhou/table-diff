@@ -1,4 +1,4 @@
-package com.github.dmn1k;
+package com.github.dmn1k.table.diff;
 
 import io.vavr.Function1;
 import io.vavr.Function2;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TableDiffer {
-    private Function2<TableCell, TableCell, Boolean> cellComparisonFn = CellComparisonStrategies.CONSIDER_MISSING_CELLS_AS_CHANGE;
+    private Function2<TableCell, TableCell, Boolean> cellComparisonFn = ColumnComparisonStrategies.CONSIDER_MISSING_COLUMNS_AS_CHANGE;
 
     /**
      * This strategy defines if and when two cells are considered equal.
@@ -20,7 +20,7 @@ public class TableDiffer {
      * @param cellComparisonFn comparison fn
      * @return a new copy of this instance with the new comparison-fn
      */
-    public TableDiffer withCellComparisonStrategy(Function2<TableCell, TableCell, Boolean> cellComparisonFn){
+    public TableDiffer withColumnComparisonStrategy(Function2<TableCell, TableCell, Boolean> cellComparisonFn){
         return new TableDiffer(cellComparisonFn);
     }
 
