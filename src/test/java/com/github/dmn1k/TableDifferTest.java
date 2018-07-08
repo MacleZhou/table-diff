@@ -153,6 +153,29 @@ class TableDifferTest {
                 assertThat(result.get(0).getDiffType()).isNotEqualTo(DiffType.Deleted);
                 assertThat(result.get(1).getDiffType()).isEqualTo(DiffType.Deleted);
             }
+
+            @DisplayName("returns all cells of deleted rows")
+            @Test
+            void returnsAllCellsOfDeletedRows() {
+                TableDiffer tableDiffer = new TableDiffer();
+                Table header = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("z")
+                );
+
+                List<TableDiffResult> result = tableDiffer.diff(
+                        Option.none(),
+                        Option.of(header
+                                .addRow("a", "b", "d")
+                        )
+                );
+
+                assertThat(result).hasSize(1);
+                assertThat(result)
+                        .extracting(r -> r.getOldRow().map(TableRow::getCells).getOrElse(List.empty()))
+                        .allMatch(cells -> cells.size() == 3);
+            }
         }
 
         @Nested
@@ -251,9 +274,39 @@ class TableDifferTest {
     @Nested
     class AsymmetricCases {
         @Nested
-        @DisplayName("when there are added columns in the new table")
-        class ColumnAddedCases {
+        @DisplayName("when columns are not in the same order")
+        class ColumnShuffledCases {
 
+            @DisplayName("columns are sorted and diff proceeds as normal")
+            @Test
+            void normalizesCellValueCountToMatchHeaders() {
+                TableDiffer tableDiffer = new TableDiffer();
+                Table header1 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.createPrimaryKey("y"),
+                        TableHeader.create("z")
+                );
+                Table header2 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("z"),
+                        TableHeader.createPrimaryKey("y")
+                );
+
+
+                List<TableDiffResult> result = tableDiffer.diff(
+                        Option.of(header1
+                                .addRow("1", "2", "3")
+                                .addRow("a", "b", "c")
+                        ),
+                        Option.of(header2
+                                .addRow("1", "3", "2")
+                                .addRow("a", "c", "b")
+                        )
+                );
+
+                assertThat(result).hasSize(2);
+                assertThat(result).allMatch(r -> DiffType.Unchanged.equals(r.getDiffType()));
+            }
         }
     }
 

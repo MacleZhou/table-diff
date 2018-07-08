@@ -17,6 +17,7 @@ public class TableDiffer {
                 .map(Table::getRows)
                 .getOrElse(List.empty());
         List<TableRow> oldTableRows = oldTable
+                .map(t -> t.normalize(newTable.map(Table::getHeaders).getOrElse(t.getHeaders())))
                 .map(Table::getRows)
                 .getOrElse(List.empty());
 

@@ -13,9 +13,12 @@ import static io.vavr.Patterns.$Nil;
 public class TableRow {
     private List<TableCell> cells;
 
+    public static TableRow create() {
+        return create(List.empty());
+    }
+
     public static TableRow create(List<TableCell> cells) {
         return new TableRow(cells);
-
     }
 
     public String primaryKeyValue() {
@@ -28,5 +31,9 @@ public class TableRow {
                 .map(TableCell::getValue)
                 .foldLeft("", String::concat);
 
+    }
+
+    public TableRow addCell(TableCell cell){
+        return create(cells.append(cell));
     }
 }
