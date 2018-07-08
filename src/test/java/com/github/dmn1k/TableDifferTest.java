@@ -308,6 +308,222 @@ class TableDifferTest {
                 assertThat(result).allMatch(r -> DiffType.Unchanged.equals(r.getDiffType()));
             }
         }
+
+        @Nested
+        @DisplayName("when old columns are removed")
+        class ColumnsRemovedCases {
+
+            @DisplayName("missing columns are ignored if IGNORE_ALL_MISSING_CELLS strategy is used")
+            @Test
+            void ignoresAdditionalColumsInOldTable() {
+                TableDiffer tableDiffer = new TableDiffer()
+                        .withCellComparisonStrategy(CellComparisonStrategies.IGNORE_ALL_MISSING_CELLS);
+
+                Table header1 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("z"),
+                        TableHeader.create("z2")
+                );
+
+                Table header2 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("z"),
+                        TableHeader.create("a")
+                );
+
+
+                List<TableDiffResult> result = tableDiffer.diff(
+                        Option.of(header1
+                                .addRow("1", "2", "A", "3")
+                                .addRow("a", "b", "B", "c")
+                        ),
+                        Option.of(header2
+                                .addRow("1", "2", "A", "3")
+                                .addRow("a", "b", "B", "c")
+                        )
+                );
+
+                assertThat(result).hasSize(2);
+                assertThat(result).allMatch(r -> DiffType.Unchanged.equals(r.getDiffType()));
+            }
+
+            @DisplayName("missing columns in new table are ignored if IGNORE_MISSING_CELLS_IN_NEW_TABLE strategy is used")
+            @Test
+            void ignoresMissingCellsInNewTable() {
+                TableDiffer tableDiffer = new TableDiffer()
+                        .withCellComparisonStrategy(CellComparisonStrategies.IGNORE_MISSING_CELLS_IN_NEW_TABLE);
+
+                Table header1 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("z"),
+                        TableHeader.create("z2")
+                );
+
+                Table header2 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("a"),
+                        TableHeader.create("z")
+                );
+
+
+                List<TableDiffResult> result = tableDiffer.diff(
+                        Option.of(header1
+                                .addRow("1", "2", "A", "3")
+                                .addRow("a", "b", "B", "c")
+                        ),
+                        Option.of(header2
+                                .addRow("1", "2", "A", "3")
+                                .addRow("a", "b", "B", "c")
+                        )
+                );
+
+                assertThat(result).hasSize(2);
+                assertThat(result).allMatch(r -> DiffType.Changed.equals(r.getDiffType()));
+            }
+
+            @DisplayName("missing columns in new table are ignored if IGNORE_MISSING_CELLS_IN_OLD_TABLE strategy is used")
+            @Test
+            void ignoresMissingCellsInOldTable() {
+                TableDiffer tableDiffer = new TableDiffer()
+                        .withCellComparisonStrategy(CellComparisonStrategies.IGNORE_MISSING_CELLS_IN_OLD_TABLE);
+
+                Table header1 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("a"),
+                        TableHeader.create("z")
+                );
+
+                Table header2 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("z")
+                );
+
+
+                List<TableDiffResult> result = tableDiffer.diff(
+                        Option.of(header1
+                                .addRow("1", "2", "A", "3")
+                                .addRow("a", "b", "B", "c")
+                        ),
+                        Option.of(header2
+                                .addRow("1", "2", "3")
+                                .addRow("a", "b", "c")
+                        )
+                );
+
+                assertThat(result).hasSize(2);
+                assertThat(result).allMatch(r -> DiffType.Unchanged.equals(r.getDiffType()));
+            }
+
+            @DisplayName("missing columns are considered as change by default")
+            @Test
+            void considersAdditionalColumnsInOldTableAsChange() {
+                TableDiffer tableDiffer = new TableDiffer();
+                Table header1 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y")
+                );
+
+                Table header2 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("z")
+                );
+
+
+                List<TableDiffResult> result = tableDiffer.diff(
+                        Option.of(header1
+                                .addRow("1", "3")
+                                .addRow("a", "c")
+                        ),
+                        Option.of(header2
+                                .addRow("1", "A", "3")
+                                .addRow("a", "B", "c")
+                        )
+                );
+
+                assertThat(result).hasSize(2);
+                assertThat(result).allMatch(r -> DiffType.Changed.equals(r.getDiffType()));
+            }
+        }
+
+        @Nested
+        @DisplayName("when new columns are added")
+        class ColumnsAddedCases {
+            @DisplayName("added columns are ignored if IGNORE_ALL_MISSING_CELLS strategy is used")
+            @Test
+            void ignoresAdditionalColumsInNewTable() {
+                TableDiffer tableDiffer = new TableDiffer()
+                        .withCellComparisonStrategy(CellComparisonStrategies.IGNORE_ALL_MISSING_CELLS);
+                Table header1 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("a"),
+                        TableHeader.create("z")
+                );
+
+                Table header2 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("z")
+                );
+
+
+
+                List<TableDiffResult> result = tableDiffer.diff(
+                        Option.of(header1
+                                .addRow("1", "2", "A", "3")
+                                .addRow("a", "b", "B", "c")
+                        ),
+                        Option.of(header2
+                                .addRow("1", "2", "3")
+                                .addRow("a", "b", "c")
+                        )
+                );
+
+                assertThat(result).hasSize(2);
+                assertThat(result).allMatch(r -> DiffType.Unchanged.equals(r.getDiffType()));
+            }
+
+            @DisplayName("added columns are considered a change by default")
+            @Test
+            void doesntIgnoreAdditionalColumnsByDefault() {
+                TableDiffer tableDiffer = new TableDiffer();
+                Table header1 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("a"),
+                        TableHeader.create("z")
+                );
+
+                Table header2 = Table.create(
+                        TableHeader.createPrimaryKey("x"),
+                        TableHeader.create("y"),
+                        TableHeader.create("z")
+                );
+
+
+
+                List<TableDiffResult> result = tableDiffer.diff(
+                        Option.of(header1
+                                .addRow("1", "2", "A", "3")
+                                .addRow("a", "b", "B", "c")
+                        ),
+                        Option.of(header2
+                                .addRow("1", "2", "3")
+                                .addRow("a", "b", "c")
+                        )
+                );
+
+                assertThat(result).hasSize(2);
+                assertThat(result).allMatch(r -> DiffType.Changed.equals(r.getDiffType()));
+            }
+        }
     }
 
 }

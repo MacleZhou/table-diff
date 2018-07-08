@@ -1,5 +1,6 @@
 package com.github.dmn1k;
 
+import io.vavr.Function2;
 import io.vavr.Tuple2;
 import io.vavr.control.Option;
 import lombok.ToString;
@@ -18,11 +19,14 @@ public class TableDiffResult {
     private Option<TableRow> oldRow;
     private DiffType diffType;
 
-    public static TableDiffResult create(Tuple2<Option<TableRow>, Option<TableRow>> rows) {
-        return create(rows._1, rows._2);
+    public static TableDiffResult create(Tuple2<Option<TableRow>, Option<TableRow>> rows,
+                                         Function2<TableCell, TableCell, Boolean> cellComparisonFn) {
+        return create(rows._1, rows._2, cellComparisonFn);
     }
 
-    public static TableDiffResult create(Option<TableRow> optNewRow, Option<TableRow> optOldRow) {
+    public static TableDiffResult create(Option<TableRow> optNewRow,
+                                         Option<TableRow> optOldRow,
+                                         Function2<TableCell, TableCell, Boolean> cellComparisonFn) {
         return Match(optNewRow).of(
                 Case($None(), () -> Match(optOldRow).of(
                         Case($None(), () -> createUnchanged(Option.none())),
@@ -30,7 +34,7 @@ public class TableDiffResult {
                 ),
                 Case($Some($()), newRow -> Match(optOldRow).of(
                         Case($None(), () -> createNew(newRow)),
-                        Case($Some($()), oldRow -> newRow.equals(oldRow)
+                        Case($Some($()), oldRow -> newRow.isSameAs(oldRow, cellComparisonFn)
                                 ? createUnchanged(newRow)
                                 : createChanged(newRow, oldRow)))
                 )

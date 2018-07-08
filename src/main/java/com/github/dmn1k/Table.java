@@ -4,7 +4,7 @@ package com.github.dmn1k;
 import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.collection.List;
-import io.vavr.collection.Map;
+import io.vavr.control.Option;
 import lombok.*;
 
 @ToString
@@ -48,21 +48,22 @@ public class Table {
 
     public List<TableCell> adjustCellsToHeaderCount(List<TableCell> tableCells) {
         List<TableCell> shrinkedCells = tableCells.dropRight(tableCells.size() - headers.size());
-        return shrinkedCells.padTo(headers.size(), TableCell.PAD_CELL);
+        return shrinkedCells.padTo(headers.size(), TableCell.MISSING_CELL);
     }
 
-    public Table normalize(List<TableHeader> target) {
-        Function1<TableHeader, Integer> totalCurrentHeaderPositionFn = target
+    public Table normalize(List<TableHeader> targetHeaders) {
+        Function1<TableHeader, Option<Integer>> totalCurrentHeaderPositionFn = targetHeaders
                 .filter(headers::contains)
                 .toMap(t -> Tuple.of(t, headers.indexOf(t)))
-                .withDefaultValue(null);
+                .lift();
 
-        Function1<TableRow, TableRow> reorderCellsFn = row -> target
-                .map(targetHeader ->
-                        row.getCells().get(totalCurrentHeaderPositionFn.apply(targetHeader)))
+        Function1<TableRow, TableRow> reorderCellsFn = row -> targetHeaders
+                .map(totalCurrentHeaderPositionFn)
+                .map(optIndex -> optIndex.map(idx -> row.getCells().get(idx))
+                        .getOrElse(() -> TableCell.MISSING_CELL))
                 .foldLeft(TableRow.create(), TableRow::addCell);
 
         return rows.map(reorderCellsFn)
-                .foldLeft(Table.create(target), Table::addRow);
+                .foldLeft(Table.create(targetHeaders), Table::addRow);
     }
 }

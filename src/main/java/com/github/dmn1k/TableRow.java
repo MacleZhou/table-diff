@@ -1,5 +1,6 @@
 package com.github.dmn1k;
 
+import io.vavr.Function2;
 import io.vavr.collection.List;
 import lombok.*;
 
@@ -35,5 +36,14 @@ public class TableRow {
 
     public TableRow addCell(TableCell cell){
         return create(cells.append(cell));
+    }
+
+    public boolean isSameAs(TableRow normalizedOther, Function2<TableCell, TableCell, Boolean> comparisonFn) {
+        if (cells.size() != normalizedOther.getCells().size()) {
+            return false;
+        }
+
+        return cells.zipWith(normalizedOther.getCells(), comparisonFn)
+                .foldLeft(true, (c1, c2) -> c1 && c2);
     }
 }
