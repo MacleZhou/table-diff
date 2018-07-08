@@ -39,3 +39,7 @@ Handles missing/added cells via multiple "ColumnComparisonStrategies":
 * IGNORE_MISSING_COLUMNS_IN_NEW_TABLE: Ignores missing columns in new table
 * IGNORE_MISSING_COLUMNS_IN_OLD_TABLE: Ignores missing columns in old table
 * CONSIDER_MISSING_COLUMNS_AS_CHANGE: Doesnt ignore missing columns at all
+
+### TODO
+* Include information on what exactly changed in a row
+* Publish to maven central
