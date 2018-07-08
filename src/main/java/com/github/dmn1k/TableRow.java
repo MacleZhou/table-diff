@@ -2,14 +2,13 @@ package com.github.dmn1k;
 
 import io.vavr.Function2;
 import io.vavr.collection.List;
-import lombok.*;
-
-import static io.vavr.API.*;
-import static io.vavr.Patterns.$Nil;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@EqualsAndHashCode
 @ToString
 public class TableRow {
     private List<TableCell> cells;
@@ -22,22 +21,29 @@ public class TableRow {
         return new TableRow(cells);
     }
 
+    /**
+     * @return all Primary Key-Cells concatenated as a single string
+     *         or ALL cell-values if there is no primary key-cell
+     */
     public String primaryKeyValue() {
-        List<TableCell> primKeyCells = cells.filter(TableCell::isPrimaryKey);
-
-        return Match(primKeyCells).of(
-                Case($Nil(), () -> cells),
-                Case($(), () -> primKeyCells)
-        )
+        return cells
+                .filter(TableCell::isPrimaryKey)
+                .orElse(cells)
                 .map(TableCell::getValue)
                 .foldLeft("", String::concat);
-
     }
 
     public TableRow addCell(TableCell cell){
         return create(cells.append(cell));
     }
 
+    /**
+     * Uses comparisonFn to determine of normalizedOther is the same row
+     *
+     * @param normalizedOther row to compare against
+     * @param comparisonFn function which defines equality of cells
+     * @return true if both rows are considered the same
+     */
     public boolean isSameAs(TableRow normalizedOther, Function2<TableCell, TableCell, Boolean> comparisonFn) {
         if (cells.size() != normalizedOther.getCells().size()) {
             return false;

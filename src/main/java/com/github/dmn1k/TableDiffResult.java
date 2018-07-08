@@ -3,7 +3,6 @@ package com.github.dmn1k;
 import io.vavr.Function2;
 import io.vavr.Tuple2;
 import io.vavr.control.Option;
-import lombok.ToString;
 import lombok.Value;
 
 import static io.vavr.API.$;
@@ -13,7 +12,6 @@ import static io.vavr.Patterns.$None;
 import static io.vavr.Patterns.$Some;
 
 @Value
-@ToString
 public class TableDiffResult {
     private Option<TableRow> newRow;
     private Option<TableRow> oldRow;
