@@ -9,6 +9,8 @@ import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.util.Optional;
+
 @AllArgsConstructor
 @NoArgsConstructor
 public class TableDiffer {
@@ -26,6 +28,26 @@ public class TableDiffer {
 
     /**
      * Compares two tables and creates a List of Diff-Results
+     * @param newTable The new table (can be null)
+     * @param oldTable The old table (can be null)
+     * @return a list of diff-results
+     */
+    public List<TableDiffResult> diff(Table newTable, Table oldTable) {
+        return diff(Option.of(newTable), Option.of(oldTable));
+    }
+
+    /**
+     * Compares two tables and creates a List of Diff-Results
+     * @param newTable The new table
+     * @param oldTable The old table
+     * @return a list of diff-results
+     */
+    public List<TableDiffResult> diff(Optional<Table> newTable, Optional<Table> oldTable) {
+        return diff(Option.ofOptional(newTable), Option.ofOptional(oldTable));
+    }
+
+    /**
+     * Compares two tables and creates a List of Diff-Results
      * @param newTable The new table
      * @param oldTable The old table
      * @return a list of diff-results
@@ -37,8 +59,8 @@ public class TableDiffer {
                 .appendAll(oldTable.map(Table::getHeaders).getOrElse(List.empty()))
                 .distinct();
 
-        List<TableRow> newTableRows = toTableRows(newTable, headerSuperset);
-        List<TableRow> oldTableRows = toTableRows(oldTable, headerSuperset);
+        List<TableRow> newTableRows = toNormalizedRows(newTable, headerSuperset);
+        List<TableRow> oldTableRows = toNormalizedRows(oldTable, headerSuperset);
 
         List<String> allPrimaryKeys = newTableRows
                 .appendAll(oldTableRows)
@@ -56,7 +78,7 @@ public class TableDiffer {
                 .sortBy(TableDiffResult::getPrimaryKey);
     }
 
-    private static List<TableRow> toTableRows(Option<Table> table, List<TableHeader> headerSuperset) {
+    private static List<TableRow> toNormalizedRows(Option<Table> table, List<TableHeader> headerSuperset) {
         return table
                     .map(t -> t.normalize(headerSuperset))
                     .map(Table::getRows)

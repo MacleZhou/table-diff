@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TableDifferTest {
@@ -103,15 +105,18 @@ class TableDifferTest {
                 List<TableDiffResult> result = tableDiffer.diff(
                         Option.of(header
                                 .addRow("a", "b", "c")
+                                .addRow("x", "y", "z")
                         ),
                         Option.of(header
                                 .addRow("a", "b", "d")
+                                .addRow("x", "y2", "z")
                         )
                 );
 
-                assertThat(result).hasSize(2);
+                assertThat(result).hasSize(3);
                 assertThat(result.get(0).getDiffType()).isEqualTo(DiffType.New);
-                assertThat(result.get(1).getDiffType()).isNotEqualTo(DiffType.New);
+                assertThat(result.get(1).getDiffType()).isEqualTo(DiffType.Deleted);
+                assertThat(result.get(2).getDiffType()).isEqualTo(DiffType.Changed);
             }
         }
 
@@ -164,12 +169,8 @@ class TableDifferTest {
                         TableHeader.create("z")
                 );
 
-                List<TableDiffResult> result = tableDiffer.diff(
-                        Option.none(),
-                        Option.of(header
-                                .addRow("a", "b", "d")
-                        )
-                );
+                List<TableDiffResult> result = tableDiffer.diff(null,
+                        header.addRow("a", "b", "d"));
 
                 assertThat(result).hasSize(1);
                 assertThat(result)
@@ -437,11 +438,11 @@ class TableDifferTest {
 
 
                 List<TableDiffResult> result = tableDiffer.diff(
-                        Option.of(header1
+                        Optional.of(header1
                                 .addRow("1", "3")
                                 .addRow("a", "c")
                         ),
-                        Option.of(header2
+                        Optional.of(header2
                                 .addRow("1", "A", "3")
                                 .addRow("a", "B", "c")
                         )
@@ -472,7 +473,6 @@ class TableDifferTest {
                         TableHeader.create("y"),
                         TableHeader.create("z")
                 );
-
 
 
                 List<TableDiffResult> result = tableDiffer.diff(
@@ -506,7 +506,6 @@ class TableDifferTest {
                         TableHeader.create("y"),
                         TableHeader.create("z")
                 );
-
 
 
                 List<TableDiffResult> result = tableDiffer.diff(
