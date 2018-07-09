@@ -4,7 +4,7 @@ Easily diff tables in Java 8+:
 
 ```Java
 TableDiffer tableDiffer = new TableDiffer()
-                          .withColumnComparisonStrategy(ColumnComparisonStrategies.IGNORE_ALL_MISSING_COLUMNS);
+                          .withColumnComparisonStrategy(IGNORE_ALL_MISSING_COLUMNS);
                               
 Table header1 = Table.create(
         TableHeader.createPrimaryKey("x"),
@@ -22,14 +22,12 @@ Table header2 = Table.create(
 
 
 List<TableDiffResult> result = tableDiffer.diff(
-        Option.of(header1
-                .addRow("1", "2", "A", "3")
-                .addRow("a", "b", "B", "c")
-        ),
-        Option.of(header2
-                .addRow("1", "2", "3")
-                .addRow("a", "b", "c")
-        )
+        header1
+          .addRow("1", "2", "A", "3")
+          .addRow("a", "b", "B", "c"),
+        header2
+          .addRow("1", "2", "3")
+          .addRow("a", "b", "c")
 );
 ```
 

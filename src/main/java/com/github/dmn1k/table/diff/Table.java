@@ -2,10 +2,8 @@ package com.github.dmn1k.table.diff;
 
 
 import io.vavr.Function1;
-import io.vavr.Function2;
 import io.vavr.Tuple;
 import io.vavr.collection.List;
-import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -50,7 +48,7 @@ public class Table {
                 .map(TableCell::create);
 
         TableRow row = TableRow.create(adjustCellsToHeaderCount(tableCells));
-        return addRowWithoutNormalization(row);
+        return addRawRow(row);
     }
 
     /**
@@ -59,17 +57,13 @@ public class Table {
      * @return a normalized table according to the given structure
      */
     public Table normalize(List<TableHeader> targetHeaders) {
-        Function2<TableRow, Option<Integer>, TableCell> findInRowFn = (row, idx) -> idx
-                .flatMap(row::getCell)
-                .getOrElse(TableCell.MISSING_CELL);
-
         Function1<TableRow, TableRow> normalizeFn = row -> targetHeaders
-                .map(headers::indexOfOption)
-                .map(findInRowFn.curried().apply(row))
+                .map(headers::indexOfOption) // index of target header in current headers
+                .map(row::getCellOrMissing) // cell with given index or MISSING_CELL
                 .foldLeft(TableRow.create(), TableRow::addCell);
 
         return rows.map(normalizeFn)
-                .foldLeft(Table.create(targetHeaders), Table::addRowWithoutNormalization);
+                .foldLeft(Table.create(targetHeaders), Table::addRawRow);
     }
 
     private List<TableCell> adjustCellsToHeaderCount(List<TableCell> tableCells) {
@@ -77,7 +71,12 @@ public class Table {
         return shrinkedCells.padTo(headers.size(), TableCell.MISSING_CELL);
     }
 
-    private Table addRowWithoutNormalization(TableRow row) {
+    /**
+     * Adds row without any adjustments like adding/dropping cells to adjust cell-count to header-count
+     * @param row the row to add
+     * @return an updated table
+     */
+    private Table addRawRow(TableRow row) {
         return new Table(headers, rows.append(row));
     }
 

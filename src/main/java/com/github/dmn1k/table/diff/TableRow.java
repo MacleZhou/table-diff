@@ -3,7 +3,6 @@ package com.github.dmn1k.table.diff;
 import io.vavr.Function2;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
-import io.vavr.control.Try;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,9 +38,8 @@ public class TableRow {
         return create(cells.append(cell));
     }
 
-    public Option<TableCell> getCell(int index) {
-        return Try.of(() -> cells.get(index))
-                .toOption();
+    public TableCell getCellOrMissing(Option<Integer> index) {
+        return index.map(cells::get).getOrElse(TableCell.MISSING_CELL);
     }
 
     /**
