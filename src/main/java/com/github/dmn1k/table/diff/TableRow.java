@@ -2,6 +2,8 @@ package com.github.dmn1k.table.diff;
 
 import io.vavr.Function2;
 import io.vavr.collection.List;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +25,7 @@ public class TableRow {
 
     /**
      * @return all Primary Key-Cells concatenated as a single string
-     *         or ALL cell-values if there is no primary key-cell
+     * or ALL cell-values if there is no primary key-cell
      */
     public String primaryKeyValue() {
         return cells
@@ -33,15 +35,20 @@ public class TableRow {
                 .foldLeft("", String::concat);
     }
 
-    public TableRow addCell(TableCell cell){
+    public TableRow addCell(TableCell cell) {
         return create(cells.append(cell));
+    }
+
+    public Option<TableCell> getCell(int index) {
+        return Try.of(() -> cells.get(index))
+                .toOption();
     }
 
     /**
      * Uses comparisonFn to determine of normalizedOther is the same row
      *
      * @param normalizedOther row to compare against
-     * @param comparisonFn function which defines equality of cells
+     * @param comparisonFn    function which defines equality of cells
      * @return true if both rows are considered the same
      */
     public boolean isSameAs(TableRow normalizedOther, Function2<TableCell, TableCell, Boolean> comparisonFn) {

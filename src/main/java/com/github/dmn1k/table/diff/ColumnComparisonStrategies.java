@@ -10,7 +10,7 @@ public final class ColumnComparisonStrategies {
     }
 
     public static final Function2<TableCell, TableCell, Boolean> CONSIDER_MISSING_COLUMNS_AS_CHANGE =
-            (a, b) -> Objects.equals(a.getValue(), b.getValue());
+            (a, b) -> !a.isMissing() && !b.isMissing() && Objects.equals(a.getValue(), b.getValue());
 
     public static final Function2<TableCell, TableCell, Boolean> IGNORE_ALL_MISSING_COLUMNS =
             (a, b) -> a.isMissing() || b.isMissing() || CONSIDER_MISSING_COLUMNS_AS_CHANGE.apply(a, b);

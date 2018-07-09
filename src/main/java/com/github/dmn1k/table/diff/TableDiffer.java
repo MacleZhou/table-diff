@@ -53,19 +53,12 @@ public class TableDiffer {
      * @return a list of diff-results
      */
     public List<TableDiffResult> diff(Option<Table> newTable, Option<Table> oldTable) {
-        List<TableHeader> headerSuperset = newTable
-                .map(Table::getHeaders)
-                .getOrElse(List.empty())
-                .appendAll(oldTable.map(Table::getHeaders).getOrElse(List.empty()))
-                .distinct();
+        List<TableHeader> headerSuperset = createHeaderSuperset(newTable, oldTable);
 
         List<TableRow> newTableRows = toNormalizedRows(newTable, headerSuperset);
         List<TableRow> oldTableRows = toNormalizedRows(oldTable, headerSuperset);
 
-        List<String> allPrimaryKeys = newTableRows
-                .appendAll(oldTableRows)
-                .map(TableRow::primaryKeyValue)
-                .distinct();
+        List<String> allPrimaryKeys = extractAllPrimaryKeys(newTableRows, oldTableRows);
 
         Function1<String, Tuple2<Option<TableRow>, Option<TableRow>>> findRowsByPrimaryKey = primKey -> Tuple.of(
                 newTableRows.find(r -> r.primaryKeyValue().equals(primKey)),
@@ -76,6 +69,21 @@ public class TableDiffer {
                 .map(findRowsByPrimaryKey)
                 .map(tuple -> TableDiffResult.create(tuple, cellComparisonFn))
                 .sortBy(TableDiffResult::getPrimaryKey);
+    }
+
+    public List<String> extractAllPrimaryKeys(List<TableRow> newTableRows, List<TableRow> oldTableRows) {
+        return newTableRows
+                .appendAll(oldTableRows)
+                .map(TableRow::primaryKeyValue)
+                .distinct();
+    }
+
+    public List<TableHeader> createHeaderSuperset(Option<Table> newTable, Option<Table> oldTable) {
+        return newTable
+                .map(Table::getHeaders)
+                .getOrElse(List.empty())
+                .appendAll(oldTable.map(Table::getHeaders).getOrElse(List.empty()))
+                .distinct();
     }
 
     private static List<TableRow> toNormalizedRows(Option<Table> table, List<TableHeader> headerSuperset) {

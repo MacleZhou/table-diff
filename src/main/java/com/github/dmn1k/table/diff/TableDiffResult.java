@@ -5,9 +5,7 @@ import io.vavr.Tuple2;
 import io.vavr.control.Option;
 import lombok.Value;
 
-import static io.vavr.API.$;
-import static io.vavr.API.Case;
-import static io.vavr.API.Match;
+import static io.vavr.API.*;
 import static io.vavr.Patterns.$None;
 import static io.vavr.Patterns.$Some;
 
@@ -26,15 +24,21 @@ public class TableDiffResult {
                                          Option<TableRow> optOldRow,
                                          Function2<TableCell, TableCell, Boolean> columnComparisonFn) {
         return Match(optNewRow).of(
+
                 Case($None(), () -> Match(optOldRow).of(
+
                         Case($None(), () -> createUnchanged(Option.none())),
                         Case($Some($()), oldRow -> createDeleted(oldRow)))
+
                 ),
+
                 Case($Some($()), newRow -> Match(optOldRow).of(
+
                         Case($None(), () -> createNew(newRow)),
                         Case($Some($()), oldRow -> newRow.isSameAs(oldRow, columnComparisonFn)
                                 ? createUnchanged(newRow)
                                 : createChanged(newRow, oldRow)))
+
                 )
         );
     }
